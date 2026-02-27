@@ -1,47 +1,75 @@
 const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME || 'saas_billing',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  min: parseInt(process.env.DB_POOL_MIN) || 2,
-  max: parseInt(process.env.DB_POOL_MAX) || 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+const isProduction = process.env.NODE_ENV === 'production';
+
+/**
+ * Use DATABASE_URL in production (Render)
+ * Use individual DB_* vars locally
+ */
+const pool = isProduction
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      min: parseInt(process.env.DB_POOL_MIN) || 2,
+      max: parseInt(process.env.DB_POOL_MAX) || 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    })
+  : new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 5432,
+      database: process.env.DB_NAME || 'saas_billing',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      ssl: false,
+      min: parseInt(process.env.DB_POOL_MIN) || 2,
+      max: parseInt(process.env.DB_POOL_MAX) || 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    });
 
 pool.on('connect', () => {
   logger.debug('New database connection established');
 });
 
 pool.on('error', (err) => {
-  logger.error('Unexpected error on idle database client', err);
+  logger.error('Unexpected error on idle database client', {
+    error: err.message,
+  });
 });
 
 /**
- * Execute a query with optional tenant isolation
+ * Execute a query
  */
-const query = async (text, params) => {
+const query = async (text, params = []) => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    logger.debug('Executed query', { text: text.substring(0, 100), rows: res.rowCount, duration });
+
+    logger.debug('Executed query', {
+      text: text.substring(0, 100),
+      rows: res.rowCount,
+      duration,
+    });
+
     return res;
   } catch (err) {
-    logger.error('Database query error', { text: text.substring(0, 100), error: err.message });
+    logger.error('Database query error', {
+      text: text.substring(0, 100),
+      error: err.message,
+    });
     throw err;
   }
 };
 
 /**
- * Execute a query within a tenant-isolated transaction
+ * Execute query with tenant isolation
  */
-const tenantQuery = async (tenantId, text, params) => {
+const tenantQuery = async (tenantId, text, params = []) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -58,39 +86,20 @@ const tenantQuery = async (tenantId, text, params) => {
 };
 
 /**
- * Get a client for multi-statement transactions
- */
-const getClient = async (tenantId = null) => {
-  const client = await pool.connect();
-  const originalQuery = client.query.bind(client);
-  const originalRelease = client.release.bind(client);
-
-  client.release = () => {
-    client.query = originalQuery;
-    client.release = originalRelease;
-    return originalRelease();
-  };
-
-  if (tenantId) {
-    await client.query('BEGIN');
-    await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`);
-  }
-
-  return client;
-};
-
-/**
- * Run a function within a transaction
+ * Transaction helper
  */
 const withTransaction = async (tenantId, fn) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
     if (tenantId) {
       await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`);
     }
+
     const result = await fn(client);
     await client.query('COMMIT');
+
     return result;
   } catch (err) {
     await client.query('ROLLBACK');
@@ -101,27 +110,29 @@ const withTransaction = async (tenantId, fn) => {
 };
 
 /**
- * Test database connection
+ * Test connection
  */
 const testConnection = async () => {
   try {
-    const res = await pool.query('SELECT NOW() as time, version() as version');
+    const res = await pool.query('SELECT NOW() as time');
     logger.info('Database connected successfully', {
       time: res.rows[0].time,
-      version: res.rows[0].version.substring(0, 50),
     });
     return true;
   } catch (err) {
-    logger.error('Database connection failed', { error: err.message });
+    logger.error('Database connection failed', {
+      error: err.message,
+    });
     return false;
   }
 };
 
 /**
- * Paginate a query
+ * Pagination helper
  */
-const paginate = async (text, params, page = 1, limit = 20) => {
+const paginate = async (text, params = [], page = 1, limit = 20) => {
   const offset = (page - 1) * limit;
+
   const countQuery = `SELECT COUNT(*) as total FROM (${text}) as count_query`;
   const dataQuery = `${text} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
 
@@ -149,7 +160,6 @@ const paginate = async (text, params, page = 1, limit = 20) => {
 module.exports = {
   query,
   tenantQuery,
-  getClient,
   withTransaction,
   testConnection,
   paginate,
