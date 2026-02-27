@@ -1,0 +1,756 @@
+{
+    "info": {
+        "name": "SaaS Billing Platform API",
+        "description": "Complete Postman collection for the Multi-Tenant SaaS Billing Platform",
+        "version": "1.0.0",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:5000/api/v1"
+        },
+        {
+            "key": "token",
+            "value": ""
+        },
+        {
+            "key": "tenant_id",
+            "value": ""
+        },
+        {
+            "key": "customer_id",
+            "value": ""
+        },
+        {
+            "key": "plan_id",
+            "value": ""
+        },
+        {
+            "key": "subscription_id",
+            "value": ""
+        },
+        {
+            "key": "invoice_id",
+            "value": ""
+        },
+        {
+            "key": "payment_id",
+            "value": ""
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "🔐 Authentication",
+            "item": [
+                {
+                    "name": "Register Tenant",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) { pm.collectionVariables.set('token', res.data.access_token); }"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "url": "{{base_url}}/auth/register",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"My Company\",\n  \"slug\": \"my-company\",\n  \"email\": \"owner@mycompany.com\",\n  \"password\": \"SecurePass@123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"currency\": \"INR\",\n  \"timezone\": \"Asia/Kolkata\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login (Owner)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) { pm.collectionVariables.set('token', res.data.access_token); pm.collectionVariables.set('tenant_id', res.data.user.tenant_id); }"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "url": "{{base_url}}/auth/login",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"owner@acmecorp.com\",\n  \"password\": \"Demo@123456\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/auth/me"
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/auth/change-password",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"current_password\": \"Demo@123456\",\n  \"new_password\": \"NewSecure@456\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👥 Customers",
+            "item": [
+                {
+                    "name": "List Customers",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/customers?page=1&limit=10&status=active",
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "active"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Customer",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) pm.collectionVariables.set('customer_id', res.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/customers",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"first_name\": \"Ravi\",\n  \"last_name\": \"Kumar\",\n  \"email\": \"ravi@example.com\",\n  \"company_name\": \"Ravi Enterprises\",\n  \"phone\": \"+91-9876543210\",\n  \"currency\": \"INR\",\n  \"payment_terms\": 30,\n  \"billing_address\": {\n    \"address_line1\": \"123 MG Road\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"country\": \"India\",\n    \"postal_code\": \"400001\"\n  },\n  \"tax_details\": {\n    \"gstin\": \"27AABCA1234A1Z5\",\n    \"tax_category\": \"regular\",\n    \"state_code\": \"MH\"\n  }\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Customer",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/customers/{{customer_id}}"
+                    }
+                },
+                {
+                    "name": "Update Customer",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/customers/{{customer_id}}",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"+91-9988776655\",\n  \"payment_terms\": 15\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Customer Subscriptions",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/customers/{{customer_id}}/subscriptions"
+                    }
+                },
+                {
+                    "name": "Customer Invoices",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/customers/{{customer_id}}/invoices"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📋 Plans",
+            "item": [
+                {
+                    "name": "List Plans",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/plans?is_active=true",
+                            "query": [
+                                {
+                                    "key": "is_active",
+                                    "value": "true"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Plan",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) pm.collectionVariables.set('plan_id', res.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/plans",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Business Plus\",\n  \"code\": \"BIZ-PLUS\",\n  \"description\": \"Perfect for growing businesses\",\n  \"billing_cycle\": \"monthly\",\n  \"price\": 4999,\n  \"currency\": \"INR\",\n  \"trial_days\": 14,\n  \"max_users\": 50,\n  \"max_api_calls\": 500000,\n  \"features\": [\n    {\"name\": \"API Access\", \"key\": \"api\", \"value\": \"500000\", \"is_enabled\": true},\n    {\"name\": \"Priority Support\", \"key\": \"support\", \"value\": \"priority\", \"is_enabled\": true}\n  ],\n  \"usage_pricing\": [\n    {\"metric_name\": \"API Calls\", \"metric_key\": \"api_calls\", \"unit_name\": \"call\", \"unit_price\": 0.001, \"included_units\": 500000}\n  ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Plan",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/plans/{{plan_id}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔄 Subscriptions",
+            "item": [
+                {
+                    "name": "List Subscriptions",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/subscriptions?status=active&page=1&limit=10",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "active"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Subscription",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) pm.collectionVariables.set('subscription_id', res.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/subscriptions",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"customer_id\": \"{{customer_id}}\",\n  \"plan_id\": \"{{plan_id}}\",\n  \"quantity\": 1,\n  \"discount_percent\": 0,\n  \"auto_renew\": true\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Subscription",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/subscriptions/{{subscription_id}}"
+                    }
+                },
+                {
+                    "name": "Cancel Subscription",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/subscriptions/{{subscription_id}}/cancel",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"Switching to another plan\",\n  \"cancel_at_period_end\": true\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Pause Subscription",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/subscriptions/{{subscription_id}}/pause"
+                    }
+                },
+                {
+                    "name": "Resume Subscription",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/subscriptions/{{subscription_id}}/resume"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🧾 Invoices",
+            "item": [
+                {
+                    "name": "List Invoices",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/invoices?status=draft&page=1&limit=10",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "draft"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Invoice",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) pm.collectionVariables.set('invoice_id', res.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/invoices",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"customer_id\": \"{{customer_id}}\",\n  \"subscription_id\": \"{{subscription_id}}\",\n  \"due_date\": \"2024-03-31\",\n  \"billing_period_start\": \"2024-03-01\",\n  \"billing_period_end\": \"2024-03-31\",\n  \"discount_percent\": 0,\n  \"notes\": \"Monthly subscription invoice\",\n  \"items\": [\n    {\n      \"type\": \"subscription\",\n      \"description\": \"Business Plus - Monthly Subscription\",\n      \"quantity\": 1,\n      \"unit\": \"month\",\n      \"unit_price\": 4999,\n      \"tax_rate\": 18\n    },\n    {\n      \"type\": \"usage\",\n      \"description\": \"API Calls - 1,200 overage calls\",\n      \"quantity\": 1200,\n      \"unit\": \"call\",\n      \"unit_price\": 0.001\n    }\n  ],\n  \"tax_rules\": [\n    {\"tax_name\": \"CGST @9%\", \"tax_type\": \"CGST\", \"tax_rate\": 9, \"taxable_amount\": 4999},\n    {\"tax_name\": \"SGST @9%\", \"tax_type\": \"SGST\", \"tax_rate\": 9, \"taxable_amount\": 4999}\n  ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Invoice",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/invoices/{{invoice_id}}"
+                    }
+                },
+                {
+                    "name": "Send Invoice",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/invoices/{{invoice_id}}/send"
+                    }
+                },
+                {
+                    "name": "Download PDF",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/invoices/{{invoice_id}}/pdf"
+                    }
+                },
+                {
+                    "name": "Generate from Subscription",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/invoices/generate-from-subscription/{{subscription_id}}"
+                    }
+                },
+                {
+                    "name": "Void Invoice",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/invoices/{{invoice_id}}/void"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💳 Payments",
+            "item": [
+                {
+                    "name": "List Payments",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/payments"
+                    }
+                },
+                {
+                    "name": "Payment Summary",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/payments/summary"
+                    }
+                },
+                {
+                    "name": "Record Payment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if(res.success) pm.collectionVariables.set('payment_id', res.data.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/payments",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invoice_id\": \"{{invoice_id}}\",\n  \"customer_id\": \"{{customer_id}}\",\n  \"method\": \"upi\",\n  \"amount\": 5899.82,\n  \"currency\": \"INR\",\n  \"reference_number\": \"UPI123456789\",\n  \"payment_date\": \"2024-03-15\",\n  \"notes\": \"Payment via UPI\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Payment",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/payments/{{payment_id}}"
+                    }
+                },
+                {
+                    "name": "Refund Payment",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/payments/{{payment_id}}/refund",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Service credit adjustment\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📊 Usage Tracking",
+            "item": [
+                {
+                    "name": "Log Usage",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/usage/log",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"customer_id\": \"{{customer_id}}\",\n  \"subscription_id\": \"{{subscription_id}}\",\n  \"metric_key\": \"api_calls\",\n  \"metric_name\": \"API Calls\",\n  \"quantity\": 1500,\n  \"unit\": \"call\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Batch Log Usage",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/usage/log/batch",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"logs\": [\n    {\"customer_id\": \"{{customer_id}}\", \"subscription_id\": \"{{subscription_id}}\", \"metric_key\": \"api_calls\", \"metric_name\": \"API Calls\", \"quantity\": 500},\n    {\"customer_id\": \"{{customer_id}}\", \"subscription_id\": \"{{subscription_id}}\", \"metric_key\": \"storage_gb\", \"metric_name\": \"Storage\", \"quantity\": 2.5, \"unit\": \"GB\"}\n  ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "List Usage Logs",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/usage?billed=false",
+                            "query": [
+                                {
+                                    "key": "billed",
+                                    "value": "false"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Usage Summary",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/usage/summary/{{subscription_id}}"
+                    }
+                },
+                {
+                    "name": "Calculate Usage",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/usage/calculate/{{subscription_id}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📈 Reports",
+            "item": [
+                {
+                    "name": "Dashboard KPIs",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/reports/dashboard?period=30",
+                            "query": [
+                                {
+                                    "key": "period",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "MRR Report",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/reports/mrr?months=12",
+                            "query": [
+                                {
+                                    "key": "months",
+                                    "value": "12"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Revenue by Plan",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/revenue-by-plan"
+                    }
+                },
+                {
+                    "name": "Outstanding Invoices (Aging)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/outstanding-invoices"
+                    }
+                },
+                {
+                    "name": "Revenue Collection",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/revenue-collection"
+                    }
+                },
+                {
+                    "name": "Customer Retention",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/customer-retention"
+                    }
+                },
+                {
+                    "name": "GST Tax Summary",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/tax-summary"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔔 Webhooks",
+            "item": [
+                {
+                    "name": "Available Events",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/webhooks/events"
+                    }
+                },
+                {
+                    "name": "List Webhooks",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/webhooks"
+                    }
+                },
+                {
+                    "name": "Register Webhook",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/webhooks",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"My Integration\",\n  \"url\": \"https://webhook.site/your-test-url\",\n  \"events\": [\"invoice.paid\", \"payment.completed\", \"subscription.cancelled\"],\n  \"retry_count\": 3,\n  \"timeout_seconds\": 30\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Test Webhook",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/webhooks/{{webhook_id}}/test"
+                    }
+                },
+                {
+                    "name": "Webhook Logs",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/webhooks/{{webhook_id}}/logs"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📝 Audit Logs",
+            "item": [
+                {
+                    "name": "List Audit Logs",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/audit?resource_type=invoices&page=1&limit=10",
+                            "query": [
+                                {
+                                    "key": "resource_type",
+                                    "value": "invoices"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Audit Summary",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/audit/summary?days=30",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

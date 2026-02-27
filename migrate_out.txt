@@ -1,0 +1,6 @@
+﻿≡ƒöä Running database migrations...
+
+Γ£à Schema already up to date
+
+
+≡ƒÄë All migrations completed successfully!

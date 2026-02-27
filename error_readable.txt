@@ -1,0 +1,7 @@
+﻿{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:51:14"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:52:11"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:52:20"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:52:37"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:52:48"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:53:04"}
+{"error":"password authentication failed for user \"postgres\"","level":"error","message":"Database connection failed","service":"saas-billing","timestamp":"2026-02-25 21:53:17"}

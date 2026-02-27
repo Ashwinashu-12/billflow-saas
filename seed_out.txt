@@ -1,0 +1,38 @@
+﻿≡ƒî▒ Seeding database with demo data...
+
+≡ƒôª Creating demo tenant...
+   Γ£à Tenant: Acme Corp (ID: a9ee2190-623c-4e4b-9c52-f4e68cc03470)
+≡ƒöÉ Creating roles...
+   Γ£à Roles: owner, admin, accountant, viewer
+≡ƒöæ Creating permissions...
+   Γ£à Permissions matrix created
+≡ƒæñ Creating demo users...
+   Γ£à Users: owner, admin, accountant, viewer
+   ≡ƒôº Login: owner@acmecorp.com / Demo@123456
+≡ƒôï Creating subscription plans...
+   Γ£à Plans: Starter, Growth, Professional, Enterprise + Annual
+≡ƒº╛ Creating GST tax rules...
+   Γ£à GST rules: CGST 9% + SGST 9% (intra-state), IGST 18% (inter-state)
+≡ƒæÑ Creating demo customers...
+   Γ£à Customers: 5 demo customers
+≡ƒöä Creating subscriptions...
+   Γ£à Subscriptions: 5 active subscriptions
+≡ƒöö Creating demo webhook...
+   Γ£à Webhook registered
+≡ƒôè Creating usage logs...
+   Γ£à Usage logs: 15 usage records
+
+≡ƒÄë Database seeded successfully!
+
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+  ≡ƒÅó Tenant:      Acme Corp Solutions
+  ≡ƒöæ Login URL:   http://localhost:5000/api/v1/auth/login
+  ≡ƒôº Owner:       owner@acmecorp.com / Demo@123456
+  ≡ƒôº Admin:       admin@acmecorp.com / Demo@123456
+  ≡ƒôº Accountant:  accountant@acmecorp.com / Demo@123456
+  ≡ƒôº Viewer:      viewer@acmecorp.com / Demo@123456
+  ≡ƒæÑ Customers:   5 demo customers
+  ≡ƒôï Plans:       5 subscription plans
+  ≡ƒöä Active Subs: 5 subscriptions
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+
